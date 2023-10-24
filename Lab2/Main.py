@@ -103,6 +103,7 @@ def read_vhi_files(directory):
     }
     vhi_data["area"].replace(dict_for_transfer, inplace=True)
     vhi_data.sort_values(by=['area', 'year', 'week'], ascending=True, inplace=True)
+    vhi_data = vhi_data.reset_index(drop=True)
     return vhi_data
 
 def vhi_extremes_by_year(area_id, year, df=None):
@@ -129,3 +130,75 @@ def extreme_drought_years_by_areas(percentage, df=None):
         area_name = dict_of_areas.get(i)
         print(f"Область: {area_name}")
         print(f"Роки екстремальних посух: {set(extreme_drought_years)}")
+#download_data()
+vhi_data = read_vhi_files(r'data')
+from spyre import server
+import json
+class StockExample(server.App):
+    title = 'NOAA data vizualization'
+
+    inputs = [
+        {
+            "type": 'dropdown',
+            "label": 'Вибрати дані',
+            "options": [{'label': "VCI", "value": 'VCI'},
+                        {'label': "TCI", "value": 'TCI'},
+                        {'label': "VHI", "value": 'VHI'}],
+            "key": 'ticker',
+            "action_id": "update_data"
+        },
+        {
+            "type": 'dropdown',
+            "label": 'Адміністративна одиниця',
+            "options": [
+                {'label': "Вінницька", "value": "1"},
+                {'label': "Волинська", "value":  "2"},
+                {'label': "Дніпропетровська", "value": "3"},
+                {'label': "Донецька", "value": "4"},
+                {'label': "Житомирська", "value": "5"},
+                 {'label': "Закарпатська", "value": "6"},
+                 {'label': "Запорізька", "value": "7"},
+                 {'label': "Івано-Франківська", "value": "8"},
+                 {'label': "Київська", "value": "9"},
+                 {'label': "Кіровоградська", "value": "10"},
+                 {'label': "Луганська", "value": "11"},
+                 {'label': "Львівська", "value": "12"},
+                 {'label': "Миколаївська", "value": "13"},
+                 {'label': "Одеська", "value": "14"},
+                 {'label': "Полтавська", "value": "15"},
+                 {'label': "Рівненська", "value": "16"},
+                 {'label': "Сумська", "value": "17"},
+                 {'label': "Тернопольска", "value": "18"},
+                 {'label': "Харківська", "value": "19"},
+                 {'label': "Херсонська", "value": "20"},
+                 {'label': "Хмельницька", "value": "21"},
+                 {'label': "Черкаська", "value": "22"},
+                 {'label': "Чернігівська", "value": "23"},
+                 {'label': "Чернівецька", "value": "24"},
+                 {'label': "Крим", "value": "25"},
+                 {'label': "Київ", "value": "26"},
+                 {'label': "Севастополь", "value": "27"},
+            ],
+            "key": 'selected_region',
+            "action_id": "update_data"}
+    ]
+    controls = [{"type": "hidden",
+                 "id": "update_data"}]
+
+    outputs = [{"type": "table",
+                "id": "table_id",
+                "control_id": "update_data",
+                "tab": "Table",
+                "on_page_load": True}]
+
+    def getData(self, params):
+        ticker = params['ticker']
+        selected_region = params['selected_region']
+        df = pd.read_csv(f'data/vhi_data_province_{selected_region}_2023-10-20_00-53-14.csv', index_col=False, header=1, skiprows=0)
+        df = df.drop(df.loc[df['VHI'] == -1].index)
+        return df[['year', 'week', str(ticker)]]
+
+app = StockExample()
+app.launch(port=9095)
+df = pd.read_csv(f'data/vhi_data_province_1_2023-10-20_00-53-14.csv', index_col=False, header=1, skiprows=0)
+print(df["VHI"])
