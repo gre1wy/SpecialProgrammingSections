@@ -2,6 +2,9 @@ import pandas as pd
 import requests
 from datetime import datetime
 import os
+from spyre import server
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 dict_of_areas= {1:"Вінницька",
     2:"Волинська",
@@ -106,34 +109,8 @@ def read_vhi_files(directory):
     vhi_data = vhi_data.reset_index(drop=True)
     return vhi_data
 
-def vhi_extremes_by_year(area_id, year, df=None):
-    if df is None:
-        df = vhi_data
-    area_data = df[(df['area'] == area_id) & (df['year'] == year)]
-    min_vhi = area_data['VHI'].min()
-    max_vhi = area_data['VHI'].max()
-    print(min_vhi, max_vhi)
-
-
-def vhi_by_area(area_id, df=None):
-    if df is None:
-        df = vhi_data
-    area_data = df[df['area'] == area_id]['VHI']
-    print(area_data)
-
-
-def extreme_drought_years_by_areas(percentage, df=None):
-    if df is None:
-        df = vhi_data
-    for i in range(1, 28):
-        extreme_drought_years = df[(df['area'] == i) & (df['VHI'] <= percentage)]['year']
-        area_name = dict_of_areas.get(i)
-        print(f"Область: {area_name}")
-        print(f"Роки екстремальних посух: {set(extreme_drought_years)}")
 #download_data()
-vhi_data = read_vhi_files(r'data')
-from spyre import server
-import json
+#vhi_data = read_vhi_files(r'data')
 class StockExample(server.App):
     title = 'NOAA data vizualization'
 
@@ -156,49 +133,108 @@ class StockExample(server.App):
                 {'label': "Дніпропетровська", "value": "3"},
                 {'label': "Донецька", "value": "4"},
                 {'label': "Житомирська", "value": "5"},
-                 {'label': "Закарпатська", "value": "6"},
-                 {'label': "Запорізька", "value": "7"},
-                 {'label': "Івано-Франківська", "value": "8"},
-                 {'label': "Київська", "value": "9"},
-                 {'label': "Кіровоградська", "value": "10"},
-                 {'label': "Луганська", "value": "11"},
-                 {'label': "Львівська", "value": "12"},
-                 {'label': "Миколаївська", "value": "13"},
-                 {'label': "Одеська", "value": "14"},
-                 {'label': "Полтавська", "value": "15"},
-                 {'label': "Рівненська", "value": "16"},
-                 {'label': "Сумська", "value": "17"},
-                 {'label': "Тернопольска", "value": "18"},
-                 {'label': "Харківська", "value": "19"},
-                 {'label': "Херсонська", "value": "20"},
-                 {'label': "Хмельницька", "value": "21"},
-                 {'label': "Черкаська", "value": "22"},
-                 {'label': "Чернігівська", "value": "23"},
-                 {'label': "Чернівецька", "value": "24"},
-                 {'label': "Крим", "value": "25"},
-                 {'label': "Київ", "value": "26"},
-                 {'label': "Севастополь", "value": "27"},
+                {'label': "Закарпатська", "value": "6"},
+                {'label': "Запорізька", "value": "7"},
+                {'label': "Івано-Франківська", "value": "8"},
+                {'label': "Київська", "value": "9"},
+                {'label': "Кіровоградська", "value": "10"},
+                {'label': "Луганська", "value": "11"},
+                {'label': "Львівська", "value": "12"},
+                {'label': "Миколаївська", "value": "13"},
+                {'label': "Одеська", "value": "14"},
+                {'label': "Полтавська", "value": "15"},
+                {'label': "Рівненська", "value": "16"},
+                {'label': "Сумська", "value": "17"},
+                {'label': "Тернопольска", "value": "18"},
+                {'label': "Харківська", "value": "19"},
+                {'label': "Херсонська", "value": "20"},
+                {'label': "Хмельницька", "value": "21"},
+                {'label': "Черкаська", "value": "22"},
+                {'label': "Чернігівська", "value": "23"},
+                {'label': "Чернівецька", "value": "24"},
+                {'label': "Крим", "value": "25"},
+                {'label': "Київ", "value": "26"},
+                {'label': "Севастополь", "value": "27"},
             ],
             "key": 'selected_region',
-            "action_id": "update_data"}
+            "action_id": "update_data"
+        },
+        {
+            "type": 'text',
+            "label": "Week range",
+            "value": "1-48",
+            "key": "wrange",
+            "action_id": "update_data"
+
+        },
+        {
+            "type": 'text',
+            "label": "Year range",
+            "value": "1983-2023",
+            "key": "rrange",
+            "action_id": "update_data"
+
+        },
+        {
+            "type": 'text',
+            "label": "xticks step",
+            "value": "1",
+            "key": "step",
+            "action_id": "update_data"
+        },
+
     ]
     controls = [{"type": "hidden",
                  "id": "update_data"}]
-
+    tabs = ["Table", "Plot"]
     outputs = [{"type": "table",
                 "id": "table_id",
                 "control_id": "update_data",
                 "tab": "Table",
-                "on_page_load": True}]
+                "on_page_load": True},
+               {"type": "plot",
+                "id": "plot",
+                "control_id": "update_data",
+                "tab": "Plot"}
+               ]
 
     def getData(self, params):
         ticker = params['ticker']
         selected_region = params['selected_region']
+        wrange = params['wrange']
+        rrange = params['rrange']
+        start_year = rrange.split('-')[0]
+        end_year = rrange.split('-')[1]
+        start_week = wrange.split('-')[0]
+        end_week = wrange.split('-')[1]
         df = pd.read_csv(f'data/vhi_data_province_{selected_region}_2023-10-20_00-53-14.csv', index_col=False, header=1, skiprows=0)
         df = df.drop(df.loc[df['VHI'] == -1].index)
-        return df[['year', 'week', str(ticker)]]
+        df = df[(df['year'] >= int(start_year)) & (df['year'] <= int(end_year)) & (df['week'] >= int(start_week)) & (df['week'] <= int(end_week))][['year', 'week', str(ticker)]]
+        df['year:week'] = df['year'].astype(str) + ':' + df['week'].astype(str)
+        return df
+
+    def getPlot(self, params):
+        df = self.getData(params)
+        plt.figure(figsize=(16, 6))
+        #plt.legend()
+        img = sns.lineplot(data=df, x='year:week', y=f'{params["ticker"]}', marker="o", markersize=5)
+        plt.xticks(range(0, len(df), int(params['step'])))
+        plt.xticks(rotation=55)
+        img.set_title('Plot1')
+        return img
+
 
 app = StockExample()
-app.launch(port=9095)
+app.launch(port=9099)
+"""
 df = pd.read_csv(f'data/vhi_data_province_1_2023-10-20_00-53-14.csv', index_col=False, header=1, skiprows=0)
-print(df["VHI"])
+df = df.drop(df.loc[df['VHI'] == -1].index)
+start_year = 2020
+end_year = 2022
+start_week = 20
+end_week = 30
+print(df)
+df["year-week"] = df['year'].astype(str) +"-"+ df["week"].astype(str)
+print(df)
+print(df[(df['year'] >= start_year) & (df['year'] <= end_year) & (df['week'] >= start_week) & (df['week'] <= end_week)])
+"""
