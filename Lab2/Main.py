@@ -59,7 +59,54 @@ def download_data():
         filename = os.path.join(data_dir, f'vhi_data_province_{i}_{time}.csv')
         with open(filename, 'wb') as file:
             file.write(clean_text)
+def read_vhi_files(directory):
+    vhi_data = pd.DataFrame()
 
+    # Отримуємо список файлів у заданій директорії
+    files = os.listdir(directory)
+
+    for file in files:
+        if file.startswith('vhi_data_province'):
+            # Зчитуємо файл у фрейм pandas
+            file_path = os.path.join(directory, file)
+            df = pd.read_csv(file_path, index_col=None, header=1)
+            df = df.drop(df.loc[df['VHI'] == -1].index)
+            province_id = int(file.split('_')[3])
+            df.insert(0, 'area', province_id)
+            vhi_data = pd.concat([vhi_data, df], ignore_index=True)
+    dict_for_transfer = {
+        1: 22,
+        2: 24,
+        3: 23,
+        4: 25,
+        5: 3,
+        6: 4,
+        7: 8,
+        8: 19,
+        9: 20,
+        10: 21,
+        11: 9,
+        12: 26,
+        13: 10,
+        14: 11,
+        15: 12,
+        16: 13,
+        17: 14,
+        18: 15,
+        19: 16,
+        20: 27,
+        21: 17,
+        22: 18,
+        23: 6,
+        24: 1,
+        25: 2,
+        26: 7,
+        27: 5
+
+    }
+    vhi_data["area"].replace(dict_for_transfer, inplace=True)
+    vhi_data.sort_values(by=['area', 'year', 'week'], ascending=True, inplace=True)
+    return vhi_data
 class StockExample(server.App):
     title = 'NOAA data vizualization'
 
