@@ -246,6 +246,9 @@ class StockExample(server.App):
         return df
     def data2(self,params):
         ticker1 = params['ticker1']
+        df0 = pd.DataFrame()
+        if ticker1 == '0':
+            return df0
         ticker2 = params['ticker2']
         ticker3 = params['ticker3']
         selected_region_2 = params['selected_region_2']
@@ -281,6 +284,9 @@ class StockExample(server.App):
         return df_2
     def data3(self, params):
         ticker1 = params['ticker1']
+        df0 = pd.DataFrame()
+        if ticker1 == '0':
+            return df0
         ticker2 = params['ticker2']
         ticker3 = params['ticker3']
         selected_region_3 = params['selected_region_3']
@@ -330,33 +336,33 @@ class StockExample(server.App):
         img = sns.lineplot(data=df, x='year:week', y=f'{params["ticker1"]}',
                            label=f'{params["ticker1"]+dict_of_areas[int(params["selected_region"])]}',
                            marker="o", markersize=3)
+        try:
+            if params["selected_region_2"] != '0':
+                sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker1"]}',
+                             label=f'{params["ticker1"]+dict_of_areas[int(params["selected_region_2"])]}', marker="o", markersize=3, ax=img)
+            if params["selected_region_3"] != "0":
+                sns.lineplot(data=df_3, x='year:week', y=f'{params["ticker1"]}',
+                             label=f'{params["ticker1"]+dict_of_areas[int(params["selected_region_3"])]}', marker="o", markersize=3, ax=img)
 
-        if params["selected_region_2"] != '0':
-            sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker1"]}',
-                         label=f'{params["ticker1"]+dict_of_areas[int(params["selected_region_2"])]}', marker="o", markersize=3, ax=img)
-        if params["selected_region_3"] != "0":
-            sns.lineplot(data=df_3, x='year:week', y=f'{params["ticker1"]}',
-                         label=f'{params["ticker1"]+dict_of_areas[int(params["selected_region_3"])]}', marker="o", markersize=3, ax=img)
-
-        if str(params["ticker2"]) != "0":
-            sns.lineplot(data=df, x='year:week', y=f'{params["ticker2"]}',
-                         label=f'{params["ticker2"]+dict_of_areas[int(params["selected_region"])]}', marker="o", markersize=3, ax=img)
-            if str(params["selected_region_2"]) != "0":
-                sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker2"]}',
-                             label=f'{params["ticker2"]+dict_of_areas[int(params["selected_region_2"])]}', marker="o", markersize=3, ax=img)
-            if str(params["selected_region_3"]) != "0":
-                sns.lineplot(data=df_3, x='year:week', y=f'{params["ticker2"]}',
-                             label=f'{params["ticker2"]+dict_of_areas[int(params["selected_region_3"])]}', marker="o", markersize=3, ax=img)
-        if str(params["ticker3"]) != "0":
-            sns.lineplot(data=df, x='year:week', y=f'{params["ticker3"]}',
-                         label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region"])]}', marker="o", markersize=3, ax=img)
-            if str(params["selected_region_3"]) != "0":
-                sns.lineplot(data=df_3, x='year:week', y=f'{params["ticker3"]}',
-                             label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region_2"])]}', marker="o", markersize=3, ax=img)
-            if str(params["selected_region_2"]) != "0":
-                sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker3"]}',
-                             label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region_3"])]}', marker="o", markersize=3, ax=img)
-
+            if str(params["ticker2"]) != "0":
+                sns.lineplot(data=df, x='year:week', y=f'{params["ticker2"]}',
+                             label=f'{params["ticker2"]+dict_of_areas[int(params["selected_region"])]}', marker="o", markersize=3, ax=img)
+                if str(params["selected_region_2"]) != "0":
+                    sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker2"]}',
+                                 label=f'{params["ticker2"]+dict_of_areas[int(params["selected_region_2"])]}', marker="o", markersize=3, ax=img)
+                if str(params["selected_region_3"]) != "0":
+                    sns.lineplot(data=df_3, x='year:week', y=f'{params["ticker2"]}',
+                                 label=f'{params["ticker2"]+dict_of_areas[int(params["selected_region_3"])]}', marker="o", markersize=3, ax=img)
+            if str(params["ticker3"]) != "0":
+                sns.lineplot(data=df, x='year:week', y=f'{params["ticker3"]}',
+                             label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region"])]}', marker="o", markersize=3, ax=img)
+                if str(params["selected_region_3"]) != "0":
+                    sns.lineplot(data=df_3, x='year:week', y=f'{params["ticker3"]}',
+                                 label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region_2"])]}', marker="o", markersize=3, ax=img)
+                if str(params["selected_region_2"]) != "0":
+                    sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker3"]}',
+                                 label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region_3"])]}', marker="o", markersize=3, ax=img)
+        except: pass
         plt.xlabel('Year:Week')  # Label for the x-axis
         plt.ylabel('Value')  # Label for the y-axis
         plt.xticks(range(0, len(df), int(params['step'])))
