@@ -107,6 +107,12 @@ def read_vhi_files(directory):
     vhi_data["area"].replace(dict_for_transfer, inplace=True)
     vhi_data.sort_values(by=['area', 'year', 'week'], ascending=True, inplace=True)
     return vhi_data
+
+vhi_data = read_vhi_files(r'data')
+a = 1
+vhi_data_1 = vhi_data[vhi_data['area'] == a]
+print(vhi_data_1)
+
 class StockExample(server.App):
     title = 'NOAA data vizualization'
 
@@ -221,8 +227,7 @@ class StockExample(server.App):
         start_week = wrange.split('-')[0]
         end_week = wrange.split('-')[1]
 
-        df = pd.read_csv(f'data/vhi_data_province_{selected_region}_2023-10-20_00-53-14.csv',
-                        index_col=False, header=1, skiprows=0)
+        df = vhi_data[vhi_data['area'] == int(selected_region)]
         df = df.drop(df.loc[df['VHI'] == -1].index)
         df = df[(df['year'] >= int(start_year)) & (df['year'] <= int(end_year)) & (df['week'] >= int(start_week)) & (
                     df['week'] <= int(end_week))]
@@ -260,8 +265,7 @@ class StockExample(server.App):
         start_week = wrange.split('-')[0]
         end_week = wrange.split('-')[1]
 
-        df_2 = pd.read_csv(f'data/vhi_data_province_{selected_region_2}_2023-10-20_00-53-14.csv',
-                         index_col=False, header=1, skiprows=0)
+        df_2 = vhi_data[vhi_data['area'] == int(selected_region_2)]
         df_2 = df_2.drop(df_2.loc[df_2['VHI'] == -1].index)
         df_2 = df_2[(df_2['year'] >= int(start_year)) & (df_2['year'] <= int(end_year)) & (df_2['week'] >= int(start_week)) & (
                 df_2['week'] <= int(end_week))]
@@ -298,8 +302,7 @@ class StockExample(server.App):
         start_week = wrange.split('-')[0]
         end_week = wrange.split('-')[1]
 
-        df_3 = pd.read_csv(f'data/vhi_data_province_{selected_region_3}_2023-10-20_00-53-14.csv',
-                           index_col=False, header=1, skiprows=0)
+        df_3 = vhi_data[vhi_data['area'] == int(selected_region_3)]
         df_3 = df_3.drop(df_3.loc[df_3['VHI'] == -1].index)
         df_3 = df_3[(df_3['year'] >= int(start_year)) & (df_3['year'] <= int(end_year)) & (df_3['week'] >= int(start_week)) & (
                     df_3['week'] <= int(end_week))]
@@ -370,7 +373,8 @@ class StockExample(server.App):
                     sns.lineplot(data=df_2, x='year:week', y=f'{params["ticker3"]}',
                                  label=f'{params["ticker3"]+dict_of_areas[int(params["selected_region_3"])]}',
                                  marker="o", markersize=3, ax=img)
-        except: pass
+        except:pass
+
         plt.xlabel('Year:Week')  # Label for the x-axis
         plt.ylabel('Value')  # Label for the y-axis
         plt.xticks(range(0, len(df), int(params['step'])))
