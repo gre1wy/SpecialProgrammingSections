@@ -171,12 +171,14 @@ def reset(event):
     noise_covariance_slider.reset()
     window_length_slider.reset()
     polyorder_slider.reset()
-    if noise_toggle_button.get_status()[0] == False:
+    if not noise_toggle_button.get_status()[0]:
         noise_toggle_button.set_active(0)
-    if show_clean_signal_button.get_status()[0] == False:
+    if not show_clean_signal_button.get_status()[0]:
         show_clean_signal_button.set_active(0)
-    if show_noisy_signal_button.get_status()[0] == True:
+    if show_noisy_signal_button.get_status()[0]:
         show_noisy_signal_button.set_active(0)
+    data_from_line = line.get_ydata(line)
+    line_savgol.set_ydata(data_from_line)
 
 # Create a button to reset the sliders to initial values.
 ax_reset = fig.add_axes((0.8, 0.2, 0.1, 0.04))
